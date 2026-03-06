@@ -3,7 +3,7 @@ import json
 import numpy as np
 import cv2
 
-IMG_DIR = r"C:\Users\nguye\Documents\3RD YEAR\TT_nhung\segmentation_dataset\images"
+IMG_DIR = r"segmentation_dataset/images"
 MASK_DIR = "segmentation_dataset/masks"
 LOG_DIR = "segmentation_dataset/logs"
 os.makedirs(MASK_DIR, exist_ok=True)
