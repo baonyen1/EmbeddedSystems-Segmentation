@@ -3,12 +3,12 @@ import os
 import random
 import shutil
 
-IMG_DIR = "segmentation_dataset/images"
-MASK_DIR = "segmentation_dataset/masks"
-OUT_DIR = "dataset_split"
+IMG_DIR = r"C:\Users\nguye\Documents\3RD YEAR\TT_nhung\lab1\segmentation_dataset\images"
+MASK_DIR = r"C:\Users\nguye\Documents\3RD YEAR\TT_nhung\lab1\segmentation_dataset\masks"
+OUT_DIR = r"dataset_split"
 
-TRAIN_RATIO = 0.7
-VAL_RATIO = 0.15
+TRAIN_RATIO = 0.6
+VAL_RATIO = 0.25
 TEST_RATIO = 0.15
 SEED = 42
 

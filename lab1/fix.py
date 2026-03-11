@@ -1,22 +1,23 @@
-import json, os
+import cv2, numpy as np, os
 
-JSON_DIR = r"C:\Users\nguye\Documents\3RD YEAR\TT_nhung\lab1\segmentation_dataset\images"
+MASK_DIR = r"C:\Users\nguye\Documents\3RD YEAR\TT_nhung\lab1\segmentation_dataset\masks"
 
-for f in os.listdir(JSON_DIR):
-    if not f.endswith(".json"): continue
-    
-    with open(os.path.join(JSON_DIR, f)) as fp:
-        data = json.load(fp)
-    
-    print(f"=== {f} ===")
-    print(f"imageWidth:  {data.get('imageWidth')}")
-    print(f"imageHeight: {data.get('imageHeight')}")
-    
-    for shape in data.get("shapes", []):
-        pts = shape.get("points", [])
-        xs = [p[0] for p in pts]
-        ys = [p[1] for p in pts]
-        print(f"label: {shape['label']}")
-        print(f"x range: {min(xs):.1f} → {max(xs):.1f}")
-        print(f"y range: {min(ys):.1f} → {max(ys):.1f}")
-    break
+ratios = []
+bad = []
+
+for f in sorted(os.listdir(MASK_DIR)):
+    if not f.endswith(".png"): continue
+    mask = cv2.imread(os.path.join(MASK_DIR, f), 0)
+    if mask is None: continue
+    ratio = (mask > 0).sum() / mask.size
+    ratios.append((f, ratio))
+    if ratio < 0.01 or ratio > 0.95:  # quá ít hoặc quá nhiều object
+        bad.append((f, ratio))
+
+print(f"Tổng: {len(ratios)} mask")
+print(f"\n⚠️  Mask bất thường ({len(bad)} file):")
+for f, r in bad:
+    print(f"  {f}: {r:.1%}")
+
+ratios_only = [r for _, r in ratios]
+print(f"\nObject ratio - Min: {min(ratios_only):.1%} | Max: {max(ratios_only):.1%} | Mean: {np.mean(ratios_only):.1%}")
