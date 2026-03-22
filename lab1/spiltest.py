@@ -3,8 +3,8 @@ import os
 import random
 import shutil
 
-IMG_DIR = r"C:\Users\nguye\Documents\3RD YEAR\TT_nhung\lab1\segmentation_dataset\images"
-MASK_DIR = r"C:\Users\nguye\Documents\3RD YEAR\TT_nhung\lab1\segmentation_dataset\masks"
+IMG_DIR = r"/home/bao/Documents/workspace/EmbeddedSystems-Segmentation/lab1/segmentation_dataset/images"
+MASK_DIR = r"/home/bao/Documents/workspace/EmbeddedSystems-Segmentation/lab1/segmentation_dataset/masks"
 OUT_DIR = r"dataset_split"
 
 TRAIN_RATIO = 0.6
