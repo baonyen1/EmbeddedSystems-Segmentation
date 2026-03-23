@@ -354,7 +354,7 @@ def get_callbacks():
             monitor="val_iou_metric",
             mode="max",
             factor=0.5,
-            patience=25,
+            patience=50,
             min_lr=1e-7,
             verbose=1
         ),

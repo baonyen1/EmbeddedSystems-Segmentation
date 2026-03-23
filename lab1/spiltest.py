@@ -7,9 +7,9 @@ IMG_DIR = r"/home/bao/Documents/workspace/EmbeddedSystems-Segmentation/lab1/segm
 MASK_DIR = r"/home/bao/Documents/workspace/EmbeddedSystems-Segmentation/lab1/segmentation_dataset/masks"
 OUT_DIR = r"dataset_split"
 
-TRAIN_RATIO = 0.6
-VAL_RATIO = 0.25
-TEST_RATIO = 0.15
+TRAIN_RATIO = 0.8
+VAL_RATIO = 0.1
+TEST_RATIO = 0.1
 SEED = 42
 
 def make_dirs():
