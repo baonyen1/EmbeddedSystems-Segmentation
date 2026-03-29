@@ -1,22 +1,29 @@
 import os
 import importlib.util
 import numpy as np
+
+# Must be set before importing TensorFlow to take effect.
+os.environ.setdefault('TF_GPU_ALLOCATOR', 'cuda_malloc_async')
+
 import tensorflow as tf
 from tensorflow.keras import layers, models, callbacks
-from tensorflow.keras import mixed_precision
-mixed_precision.set_global_policy('mixed_float16')
 
+#export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib/python3.11/site-packages/tensorflow:$LD_LIBRARY_PATH : active cuda
 gpus = tf.config.list_physical_devices('GPU')
 if gpus:
-    for gpu in gpus:
-        tf.config.experimental.set_memory_growth(gpu, True)
+    try:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        print("--- Đã bật Memory Growth ---")
+    except RuntimeError as e:
+        print(e)
 
 # =====================
 # CONFIG
 # =====================
-DATA_DIR    = "dataset_split"
+DATA_DIR    = "/home/bao/Documents/workspace/EmbeddedSystems-Segmentation/lab1/dataset_split"
 IMG_SIZE    = 256
-BATCH_SIZE  = 4        # tăng từ 4 → 8: batch lớn hơn giúp BatchNorm ổn định hơn
+BATCH_SIZE  = 2      # tăng từ 4 → 8: batch lớn hơn giúp BatchNorm ổn định hơn
 EPOCHS      = 200      # tăng epochs, EarlyStopping sẽ dừng đúng lúc
 SEED        = 42
 
@@ -277,7 +284,7 @@ def unet_attention(input_size=(IMG_SIZE, IMG_SIZE, 3)):
     """
     U-Net với:
     - Attention Gates ở mỗi skip connection
-    - Conv2DTranspose thay UpSampling2D (học được upsampling)
+    - UpSampling2D + Conv2D để giảm peak memory
     - Deeper: 32→64→128→256→512
     - Deep supervision (auxiliary loss ở bottleneck)
     """
@@ -299,27 +306,31 @@ def unet_attention(input_size=(IMG_SIZE, IMG_SIZE, 3)):
     # ---- Bottleneck ----
     b = conv_block(p4, 512, dropout_rate=0.4)            # 16x16
 
-    # ---- Decoder với Attention Gate + Conv2DTranspose ----
+    # ---- Decoder với Attention Gate + UpSampling2D + Conv2D ----
     # Block 1: 16→32
-    u1 = layers.Conv2DTranspose(256, 2, strides=2, padding="same")(b)   # 32x32
+    u1 = layers.UpSampling2D(size=(2, 2), interpolation="bilinear")(b)  # 32x32
+    u1 = layers.Conv2D(256, 3, padding="same", activation="relu")(u1)
     c4_att = attention_gate(c4, u1, 256)
     u1 = layers.Concatenate()([u1, c4_att])
     c5 = conv_block(u1, 256, dropout_rate=0.3)
 
     # Block 2: 32→64
-    u2 = layers.Conv2DTranspose(128, 2, strides=2, padding="same")(c5)  # 64x64
+    u2 = layers.UpSampling2D(size=(2, 2), interpolation="bilinear")(c5)  # 64x64
+    u2 = layers.Conv2D(128, 3, padding="same", activation="relu")(u2)
     c3_att = attention_gate(c3, u2, 128)
     u2 = layers.Concatenate()([u2, c3_att])
     c6 = conv_block(u2, 128, dropout_rate=0.2)
 
     # Block 3: 64→128
-    u3 = layers.Conv2DTranspose(64, 2, strides=2, padding="same")(c6)   # 128x128
+    u3 = layers.UpSampling2D(size=(2, 2), interpolation="bilinear")(c6)   # 128x128
+    u3 = layers.Conv2D(64, 3, padding="same", activation="relu")(u3)
     c2_att = attention_gate(c2, u3, 64)
     u3 = layers.Concatenate()([u3, c2_att])
     c7 = conv_block(u3, 64,  dropout_rate=0.1)
 
     # Block 4: 128→256
-    u4 = layers.Conv2DTranspose(32, 2, strides=2, padding="same")(c7)   # 256x256
+    u4 = layers.UpSampling2D(size=(2, 2), interpolation="bilinear")(c7)   # 256x256
+    u4 = layers.Conv2D(32, 3, padding="same", activation="relu")(u4)
     c1_att = attention_gate(c1, u4, 32)
     u4 = layers.Concatenate()([u4, c1_att])
     c8 = conv_block(u4, 32,  dropout_rate=0.05)
